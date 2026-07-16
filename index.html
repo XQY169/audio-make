@@ -109,8 +109,25 @@
 
   <script type="module" src="js/app.js"></script>
   <script>
-    // 注册 Service Worker（仅 https 或 localhost）
-    if ('serviceWorker' in navigator) {
+    // 自愈入口：访问带 ?reset 的地址时，注销旧 SW + 清空所有缓存 + 重新加载，
+    // 用于从"坏缓存导致脚本无法加载"的状态中恢复。
+    if (location.search.indexOf('reset') !== -1) {
+      (async () => {
+        try {
+          if ('serviceWorker' in navigator) {
+            const rs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(rs.map((r) => r.unregister()));
+          }
+          if (window.caches) {
+            const ks = await caches.keys();
+            await Promise.all(ks.map((k) => caches.delete(k)));
+          }
+        } catch (e) {}
+        const u = location.origin + location.pathname + location.hash;
+        location.replace(u); // 去掉 ?reset 后重新加载
+      })();
+    } else if ('serviceWorker' in navigator) {
+      // 注册 Service Worker（仅 https 或 localhost）
       const proto = location.protocol;
       if (proto === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
         window.addEventListener('load', () => {
