@@ -740,3 +740,47 @@ select {
   .brand .sub { display: none; }
   .clip-card { width: 148px; }
 }
+
+/* ============== 横屏优化（手机横屏） ============== */
+@media (orientation: landscape) and (max-height: 540px) {
+  .editor { padding: 0 14px 110px; margin-top: 4px; }
+  /* 编辑器左右分栏：左大波形 + 右参数，一屏内完成裁剪/调参 */
+  .editor .panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-areas: "head head" "wave params";
+    align-items: stretch;
+  }
+  .editor .panel-head { grid-area: head; padding: 10px 14px; }
+  .editor .panel-head .title small { display: none; } /* 横屏省空间 */
+  .editor .wave-stage { grid-area: wave; padding: 6px 8px 18px; }
+  .editor .wave-stage canvas { height: clamp(170px, 44vh, 300px); }
+  .editor .wave-stage .hint { display: none; }
+  .editor .params {
+    grid-area: params;
+    grid-template-columns: 1fr;
+    padding: 10px 12px;
+    gap: 10px;
+    border-left: 1px solid var(--border-soft);
+    overflow: auto;
+  }
+  .editor .time-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .editor .field .lbl { font-size: 11px; }
+  input[type="range"] { height: 24px; }
+
+  /* 时间线更紧凑，露出更多片段 */
+  .section-title { margin: 8px 14px 4px; }
+  .clip-card { width: 150px; }
+  .clip-card .thumb { height: 44px; }
+  .clip-card .meta-row { padding: 5px 8px 2px; }
+  .clip-card .dur { padding: 0 8px 7px; }
+  .timeline { padding: 4px 2px 8px; }
+  .add-card { min-height: 72px; width: 96px; }
+
+  /* 传输栏 / 底栏更矮 */
+  .transport { padding: 5px 14px; gap: 10px; }
+  .transport .play-btn { width: 44px; height: 44px; }
+  .transport .play-btn svg { width: 19px; height: 19px; }
+  .actionbar { padding: 7px 14px calc(7px + env(safe-area-inset-bottom)); }
+  .actionbar .btn { height: 40px; font-size: 14px; }
+}
