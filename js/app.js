@@ -70,7 +70,12 @@ function init() {
   window.addEventListener('orientationchange', () => setTimeout(() => { if (editor) editor.resize(); }, 300));
 }
 
-document.addEventListener('DOMContentLoaded', init);
+// 防御：若脚本在 DOMContentLoaded 之后才执行（如被 SW 缓存延迟），仍能立即初始化。
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
 
 function stopPlayback() { if (engine && engine.state !== 'stopped') engine.stop(); }
 

@@ -6,7 +6,7 @@
  *
  * 更新应用时把 CACHE 版本号递增即可让旧缓存失效。
  */
-const CACHE = 'audio-studio-v1';
+const CACHE = 'audio-studio-v2';
 const SHELL = [
   './',
   './index.html',
@@ -22,12 +22,12 @@ const SHELL = [
 ];
 
 self.addEventListener('install', (e) => {
+  // 整体缓存：任一资源失败则 install 失败（浏览器会重试），
+  // 避免出现“HTML 缓存了但 app.js 没缓存”的半残状态导致应用无响应。
   e.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE);
-      await Promise.all(
-        SHELL.map((u) => cache.add(u).catch(() => {}))
-      );
+      await cache.addAll(SHELL);
       self.skipWaiting();
     })()
   );
