@@ -1,0 +1,15 @@
+# 依赖（仅用于本地测试，部署不需要）
+node_modules/
+package-lock.json
+
+# Claude Code 会话/计划目录（勿提交）
+.claude/
+
+# 系统 / 编辑器
+.DS_Store
+.vscode/
+.idea/
+
+# 日志 / 临时
+*.log
+/tmp/

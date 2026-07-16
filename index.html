@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#0b0f1a" />
+  <meta name="description" content="在手机上剪辑、拼接、淡变并导出音频——纯本地处理。" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="音频工坊" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <title>音频工坊 · 本地音频编辑器</title>
+</head>
+<body>
+  <div class="app">
+    <!-- 顶栏 -->
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <span class="logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+              <path d="M5 10v4M9.5 7v10M14 9.5v5M18.5 11v2" stroke="white"/>
+            </svg>
+          </span>
+          <div>
+            音频工坊
+            <div class="sub">本地音频编辑</div>
+          </div>
+        </div>
+        <div class="spacer"></div>
+        <button id="undoBtn" class="icon-btn" title="撤销 (Ctrl+Z)" aria-label="撤销" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-4"/></svg>
+        </button>
+        <button id="redoBtn" class="icon-btn" title="重做 (Ctrl+Y)" aria-label="重做" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14l5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h4"/></svg>
+        </button>
+        <button id="aboutBtn" class="icon-btn" title="帮助 / 关于" aria-label="帮助">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- 传输栏 -->
+    <div class="transport">
+      <button id="playBtn" class="play-btn" title="播放/暂停" aria-label="播放或暂停" disabled>
+        <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <button id="stopBtn" class="icon-btn" title="停止" aria-label="停止" disabled>
+        <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+      </button>
+      <div class="scrub" id="scrub" role="slider" aria-label="进度" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" tabindex="0">
+        <div class="track"><div class="fill" id="scrubFill"></div></div>
+        <div class="knob" id="scrubKnob"></div>
+      </div>
+      <div class="time"><span class="cur" id="curTime">0:00</span><span class="sep"> / </span><span id="totTime">0:00</span></div>
+    </div>
+
+    <!-- 时间线 -->
+    <div class="section-title">
+      <h2>时间线</h2>
+      <span class="meta" id="clipMeta">0 个片段</span>
+    </div>
+    <div class="timeline-wrap">
+      <div class="timeline" id="timeline" aria-label="片段时间线"></div>
+    </div>
+
+    <!-- 编辑面板宿主（空状态或片段编辑器） -->
+    <div id="editorHost">
+      <div class="empty">
+        <div class="empty-card">
+          <div class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          </div>
+          <h3>开始你的音频项目</h3>
+          <p>选择多个音频文件，在此剪辑、分割、拼接、淡变与调整音量，全部在本地完成，不上传任何数据。</p>
+          <button class="btn" id="emptyAddBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            添加音频文件
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部操作条 -->
+  <div class="actionbar">
+    <div class="actionbar-inner">
+      <button class="btn" id="addBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        添加音频
+      </button>
+      <button class="btn ghost" id="exportBtn" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        导出
+      </button>
+    </div>
+  </div>
+
+  <!-- 文件输入 -->
+  <input type="file" id="fileInput" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.oga,.flac,.opus,.webm,.weba" multiple hidden />
+
+  <!-- toast -->
+  <div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+
+  <script type="module" src="js/app.js"></script>
+  <script>
+    // 注册 Service Worker（仅 https 或 localhost）
+    if ('serviceWorker' in navigator) {
+      const proto = location.protocol;
+      if (proto === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js').catch(() => {});
+        });
+      }
+    }
+  </script>
+</body>
+</html>
